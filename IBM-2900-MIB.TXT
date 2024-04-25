@@ -1,0 +1,1261 @@
+-- ****************************************************
+-- IBM-2900-MIB.txt : IBM Tape Library MIB
+--                    for IBM 3572-TL
+-- ****************************************************
+--
+-- 2008. 7. 9 Rev.001 first
+-- 2010.11.26 Rev.002 trapClientEntry 6, trapClientEntry 7 SYNTAX modify (INTEGER -> Integer32)
+-- 2010.11.29 Rev.003 delete EOF (0x1A) code.
+-- 2010.12. 7 Rev.004 change Integer32 to INTEGER. Modify SYNTAX of "SEQUENCE OF ...".
+-- 2011. 2. 7 Rev.013 Correct typo.
+-- ****************************************************
+
+IBM-2900-MIB DEFINITIONS ::= BEGIN 
+
+IMPORTS 
+	MODULE-IDENTITY,
+	OBJECT-TYPE,
+	NOTIFICATION-TYPE,
+	IpAddress,
+	-- Integer32,
+	enterprises 
+					FROM SNMPv2-SMI
+	TEXTUAL-CONVENTION,
+	DisplayString 
+					FROM SNMPv2-TC
+	MODULE-COMPLIANCE,
+	OBJECT-GROUP,
+	NOTIFICATION-GROUP
+					FROM SNMPv2-CONF;
+
+	ibm3572			MODULE-IDENTITY
+	LAST-UPDATED	"201102070000Z"
+	ORGANIZATION	"IBM Corporation"
+	CONTACT-INFO	"IBM Corporation"
+	DESCRIPTION		"The MIB module to describe IBM Tape Storage Product."
+
+	REVISION		"201102070000Z"
+	DESCRIPTION		"SMIv2, SNMPv3."
+	::= { enterprises 2 6 219 }
+
+	-- ibm			OBJECT IDENTIFIER ::= { enterprises 2 }
+	-- ibmProd		OBJECT IDENTIFIER ::= { ibm 6 }
+	-- ::= { ibmProd 219 }
+
+
+    --Textual conventions for this MIB
+
+	EventSeverity  ::= TEXTUAL-CONVENTION
+		STATUS		current
+		DESCRIPTION	"Event Severity"
+		SYNTAX		INTEGER { 
+				unknown     (1),
+				emergency	(2),
+				error		(3),
+				warning		(4),
+				info		(5)
+			} 
+
+----------------------------------------------------------------------
+	productSpec	OBJECT IDENTIFIER ::= { ibm3572 1 }
+	ibmmt		OBJECT IDENTIFIER ::= { ibm3572 2 }
+	fcmgmt		OBJECT IDENTIFIER ::= { ibm3572 3 }
+
+	-- groups in productSpec 
+
+	ibmTS2900		OBJECT IDENTIFIER ::= { productSpec 21 } 
+		ibmTS2900MIBNotifications		OBJECT IDENTIFIER ::= { ibmTS2900 0 }
+		ibmTS2900MIBObjects				OBJECT IDENTIFIER ::= { ibmTS2900 1 }
+		ibmTS2900MIBConform				OBJECT IDENTIFIER ::= { ibmTS2900 2 }
+			ibmTS2900MIBCompliances		OBJECT IDENTIFIER ::= { ibmTS2900MIBConform 1 }
+			ibmTS2900MIBGroups			OBJECT IDENTIFIER ::= { ibmTS2900MIBConform 2 }
+
+
+	-- groups in ibmmt 
+
+	libraryInfo		OBJECT IDENTIFIER ::= { ibmmt 1 } 
+	libraryStatus	OBJECT IDENTIFIER ::= { ibmmt 2 } 
+	trapInfo		OBJECT IDENTIFIER ::= { ibmmt 4 } 
+
+	revisionNumber	OBJECT-TYPE
+		SYNTAX		DisplayString (SIZE (4))
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION
+			"This is the revision number for this MIB. The
+			format of the revision value is as follows
+				(0) = high order major revision number
+				(1) = low order major revision number
+				(2) = high order minor revision number
+				(3) = low order minor revision number
+			The value will be stored as an ASCII value. The
+			following is the current value of this object.
+				(0) = '0'
+				(1) = '0'
+				(2) = '1'
+				(3) = '1'
+			This defines a revision of 00.11
+			"
+		::= { ibmmt 5 }
+
+	-- groups in libraryInfo 
+
+	contInfo        OBJECT IDENTIFIER ::= { libraryInfo 1 } 
+
+	-- groups in contInfo 
+
+	unitNumber		OBJECT-TYPE
+		SYNTAX		INTEGER
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION
+			"The number of connectivity units present on this
+			system (represented by this agent). It is 1. "
+		::= { contInfo 1 }
+
+	unitTime		OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..15))
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"This is the real time when the event occurred.
+			It has the following format.
+				DDMMYYYY HHMMSS
+				DD=day number
+				MM=month number
+				YYYY=year number
+				HH=hour number
+				MM=minute number
+				SS=seconds number "
+		::= { contInfo 2 } 
+
+    sysName			OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..32))
+		MAX-ACCESS	read-write 
+		STATUS		current 
+		DESCRIPTION 
+			"This is the system name or domain name.
+			Default value is NULL.
+			It accepts 'Set Request', but no operation. 
+			This is set from Web Administration Tool. "
+		::= { contInfo 3 } 
+
+	unitContact		OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..32)) 
+		MAX-ACCESS	read-write 
+		STATUS		current 
+		DESCRIPTION 
+			"Contact information for this connectivity
+			unit. Default value is NULL.
+			It accepts 'Set Request', but no operation. 
+			This is set from Web Administration Tool. "
+		::= { contInfo 4 } 
+
+	unitLocation	OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..32)) 
+		MAX-ACCESS	read-write 
+		STATUS		current 
+		DESCRIPTION 
+			"Location information for this connectivity
+			unit. Default value is NULL.
+			It accepts 'Set Request', but no operation. 
+			This is set from Web Administration Tool. "
+		::= { contInfo 5 } 
+
+	unitName		OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..24)) 
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"Unit name for this connectivity unit. 
+			This is Vender ID + Product ID of Inquiry 
+			Command.
+			Default value is 'NEC T40A' or 'NEC T16A'. "
+		::= { contInfo 6 } 
+
+	serialNumber	OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..16)) 
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"Serial number for this connectivity unit. "
+		::= { contInfo 7 } 
+
+	frevNumber		OBJECT-TYPE 
+		SYNTAX		DisplayString (SIZE (0..8)) 
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"Firmware revision number for this connectivity 
+			unit. "
+		::= { contInfo 8 } 
+
+	busInfo			OBJECT-TYPE 
+		SYNTAX		INTEGER {
+			unknown	 	(1),
+			fast		(2),
+			ultra		(3),
+			ultra2		(4),
+			ultra160	(5),
+			ultra320	(6)
+		}
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"SCSI bus information for this connectivity 
+			unit. "
+		::= { contInfo 9 } 
+
+	idInfo			OBJECT-TYPE 
+		SYNTAX		INTEGER
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"SCSI ID information for this connectivity 
+			unit. "
+		::= { contInfo 10 } 
+
+	-- groups in driveInfoTable 
+
+	driveInfoTable		OBJECT-TYPE 
+		SYNTAX			SEQUENCE OF DriveInfoEntry 
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"A list of drives."
+		::= { libraryInfo 2 }
+
+	driveInfoEntry		OBJECT-TYPE 
+		SYNTAX			DriveInfoEntry
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"A drive unit entry containing objects for a 
+			 particular unit." 
+		INDEX { driveUnitId } 
+		::= { driveInfoTable 1 } 
+
+		DriveInfoEntry ::= 
+			SEQUENCE { 
+				driveUnitId 
+					INTEGER, 
+				driveName 
+					DisplayString, 
+				drvSerialNumber 
+					DisplayString, 
+				drvFrevNumber 
+					DisplayString, 
+				drvBusInfo 
+					INTEGER, 
+				drvIdInfo
+					INTEGER
+			} 
+
+		driveUnitId		OBJECT-TYPE 
+			SYNTAX		INTEGER (0..65535)
+			MAX-ACCESS	not-accessible 
+			STATUS		current 
+			DESCRIPTION 
+				"Index of the drive unit.
+				The value is 0 or 1."
+			::= { driveInfoEntry 1 }
+
+		driveName		OBJECT-TYPE 
+			SYNTAX		DisplayString (SIZE (0..24))
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Drive name for this connectivity unit. 
+				This is Vender ID + Product ID of Inquiry 
+				Command. " 
+			::= { driveInfoEntry 2 }
+
+		drvSerialNumber	OBJECT-TYPE 
+			SYNTAX		DisplayString (SIZE (0..16)) 
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Serial number for drive unit. "
+			::= { driveInfoEntry 3 } 
+
+		drvFrevNumber	OBJECT-TYPE 
+			SYNTAX		DisplayString (SIZE (0..8)) 
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Firmware revision number for drive unit."
+			::= { driveInfoEntry 4 } 
+
+		drvBusInfo		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown		(1),
+				fast		(2),
+				ultra		(3),
+				ultra2		(4),
+				ultra160	(5),
+				ultra320	(6)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"SCSI bus information for drive unit."
+			::= { driveInfoEntry 5 } 
+
+		drvIdInfo		OBJECT-TYPE 
+			SYNTAX		INTEGER
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"SCSI ID information for drive unit."
+			::= { driveInfoEntry 6 } 
+
+	-- groups in slotInfo 
+
+	slotInfo		OBJECT IDENTIFIER ::= { libraryInfo 3 } 
+
+	maxUsrSlotNumber	OBJECT-TYPE 
+		SYNTAX			INTEGER
+		MAX-ACCESS		read-only 
+		STATUS			current 
+		DESCRIPTION 
+			"Max user slot number for this connectivity 
+			unit. "
+		::= { slotInfo 1 } 
+
+	maxMagNumber		OBJECT-TYPE 
+		SYNTAX			INTEGER
+		MAX-ACCESS		read-only 
+		STATUS			current 
+		DESCRIPTION 
+			"Max magazine number for this connectivity 
+			unit. "
+		::= { slotInfo 2 } 
+
+	ieSlotNumber		OBJECT-TYPE 
+		SYNTAX			INTEGER
+		MAX-ACCESS		read-only 
+		STATUS			current 
+		DESCRIPTION 
+			"Import/export slot number for this connectivity 
+			unit. "
+		::= { slotInfo 3 } 
+
+	slotInfoTable		OBJECT-TYPE 
+		SYNTAX			SEQUENCE OF SlotInfoEntry 
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"A list of slot information."
+		::= { slotInfo 4 }
+
+	slotInfoEntry		OBJECT-TYPE 
+		SYNTAX			SlotInfoEntry
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"Slots information entry containing objects for a 
+			 particular unit." 
+		INDEX { slotIndex } 
+		::= { slotInfoTable 1 } 
+
+		SlotInfoEntry ::= 
+			SEQUENCE { 
+				slotIndex 
+					INTEGER, 
+				slotUnitInfo 
+					INTEGER, 
+				slotTable 
+					DisplayString 
+			} 
+
+		slotIndex		OBJECT-TYPE 
+			SYNTAX		INTEGER (0..65535)
+			MAX-ACCESS	not-accessible 
+			STATUS		current 
+			DESCRIPTION 
+				"Index of the slot information." 
+			::= { slotInfoEntry 1 }
+
+		slotUnitInfo	OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1),
+				slot	(2),
+				ieslot	(3),
+				drive	(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Slot type information." 
+			::= { slotInfoEntry 2 }
+
+		slotTable		OBJECT-TYPE 
+			SYNTAX		DisplayString (SIZE(8))
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"slot information. barcode label or NULL" 
+			::= { slotInfoEntry 3 }
+
+	-- groups in contStatusTable 
+
+	contStatusTable		OBJECT-TYPE 
+		SYNTAX			SEQUENCE OF ContStatusEntry 
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"A list of controller unit information."
+		::= { libraryStatus 1 }
+
+	contStatusEntry		OBJECT-TYPE 
+		SYNTAX			ContStatusEntry
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"controller information entry containing 
+			 objects for a particular unit." 
+		INDEX { contIndex } 
+		::= { contStatusTable 1 } 
+
+		ContStatusEntry ::= 
+			SEQUENCE { 
+				contIndex 
+					INTEGER, 
+				contPowerStatus 
+					INTEGER, 
+				magState 
+					INTEGER, 
+				magStatus 
+					INTEGER, 
+				ieState 
+					INTEGER, 
+				robotStatus 
+					INTEGER, 
+				contState 
+					INTEGER, 
+				contStatus 
+					INTEGER, 
+				doorStatus 
+					INTEGER 
+			} 
+
+		contIndex		OBJECT-TYPE 
+			SYNTAX		INTEGER
+			MAX-ACCESS	not-accessible 
+			STATUS		current 
+			DESCRIPTION 
+				"Index of the controller information.
+				 It is 1." 
+			::= { contStatusEntry 1 }
+
+		contPowerStatus	OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				ok		(2), 
+				warning	(3),
+				failed	(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Controller power status. " 
+			::= { contStatusEntry 2 }
+
+		magState		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				open	(2), 
+				close	(3) 
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Magazine Status. Open or Close. " 
+			::= { contStatusEntry 3 }
+
+		magStatus		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				ok		(2), 
+				warning	(3),
+				failed	(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Magazine Status. Ok, warning, failed. " 
+			::= { contStatusEntry 4 }
+
+		ieState			OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				open	(2), 
+				close	(3) 
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Import / Export Slot (Mail Slot) Status.
+				 Open or Close. " 
+			::= { contStatusEntry 5 }
+
+		robotStatus		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				ok		(2), 
+				warning	(3),
+				failed	(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Robot Status. Ok, warning, failed. " 
+			::= { contStatusEntry 6 }
+
+		contState		OBJECT-TYPE 
+			SYNTAX INTEGER {
+				unknown	(1), 
+				ok		(2), 
+				warning	(3),
+				failed	(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Controller Status. Ok, warning, failed. " 
+			::= { contStatusEntry 7 }
+
+		contStatus		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown	(1), 
+				online	(2), 
+				offline	(3) 
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Controller Status. Online or Offline. " 
+			::= { contStatusEntry 8 }
+
+		doorStatus		OBJECT-TYPE 
+			SYNTAX		INTEGER
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"Door Status. Open or Close. " 
+			::= { contStatusEntry 9 }
+
+	-- groups in drvStatus 
+
+	drvStatusTable		OBJECT-TYPE 
+		SYNTAX			SEQUENCE OF DrvStatusEntry 
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"A list of drive unit information."
+		::= { libraryStatus 2 }
+
+	drvStatusEntry		OBJECT-TYPE 
+		SYNTAX			DrvStatusEntry
+		MAX-ACCESS		not-accessible 
+		STATUS			current 
+		DESCRIPTION 
+			"Drive information entry containing objects for a 
+			 particular unit." 
+		INDEX { driveUnitIndex } 
+		::= { drvStatusTable 1 } 
+
+		DrvStatusEntry ::= 
+			SEQUENCE { 
+				driveUnitIndex 
+					INTEGER, 
+				driveState 
+					INTEGER, 
+				driveStatus 
+					INTEGER 
+			} 
+
+		driveUnitIndex	OBJECT-TYPE 
+			SYNTAX		INTEGER (0..65535)
+			MAX-ACCESS	not-accessible
+			STATUS		current 
+			DESCRIPTION 
+				"Index of the drive information." 
+			::= { drvStatusEntry 1 }
+
+		driveState		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown		(1), 
+				empty		(2), 
+				cartridgeIn	(3), 
+				writing		(4), 
+				reading		(5), 
+				rewinding	(6), 
+				locating	(7), 
+				cleaning	(8)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"the drive state." 
+			::= { drvStatusEntry 2 }
+
+		driveStatus		OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown		(1), 
+				ok			(2), 
+				needClean	(3), 
+				warning		(4), 
+				failed		(5) 
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"the drive status." 
+			::= { drvStatusEntry 3 }
+
+	-- groups in unitEventTable 
+
+	unitEventTable	OBJECT-TYPE 
+		SYNTAX		SEQUENCE OF UnitEventEntry 
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"A list of unit event information."
+		::= { ibmmt 3 }
+
+	unitEventEntry	OBJECT-TYPE 
+		SYNTAX		UnitEventEntry
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"Event information entry containing objects for a 
+			 particular unit." 
+		INDEX { unitEventIndex } 
+		::= { unitEventTable 1 } 
+
+		UnitEventEntry ::= 
+			SEQUENCE { 
+				unitEventIndex 
+					INTEGER, 
+				unitEventUnitId 
+					INTEGER, 
+				unitEventId 
+					INTEGER, 
+				unitEventTime 
+					DisplayString, 
+				unitEventType 
+					INTEGER, 
+				unitEventDescr 
+					DisplayString 
+			} 
+
+		unitEventIndex	OBJECT-TYPE 
+			SYNTAX		INTEGER (0..65535)
+			MAX-ACCESS	not-accessible
+			STATUS		current 
+			DESCRIPTION 
+				"Index of the event information." 
+			::= { unitEventEntry 1 }
+
+		unitEventUnitId	OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				other		(1), 
+				controller	(2), 
+				drive1		(3), 
+				drive2		(4)
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"This is the Unit id of the event occurred." 
+			::= { unitEventEntry 2 }
+
+		unitEventId		OBJECT-TYPE 
+			SYNTAX		INTEGER
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"This is the Unit Event ID." 
+			::= { unitEventEntry 3 }
+
+		unitEventTime	OBJECT-TYPE 
+			SYNTAX		DisplayString(SIZE(15)) 
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"This is the real time when the event occurred.
+				It has the following format.
+					DDMMYYYY HHMMSS
+					DD=day number
+					MM=month number
+					YYYY=year number
+					HH=hour number
+					MM=minute number
+					SS=seconds number
+				If not applicable, return a NULL string."
+			::= { unitEventEntry 4 }
+
+		unitEventType	OBJECT-TYPE 
+			SYNTAX		INTEGER {
+				unknown		(1), 
+				emergency	(2), 
+				error		(3), 
+				warning		(4), 
+				info		(5) 
+			}
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"This is the event type." 
+			::= { unitEventEntry 5 }
+
+		unitEventDescr	OBJECT-TYPE 
+			SYNTAX		DisplayString(SIZE(0..1024))
+			MAX-ACCESS	read-only 
+			STATUS		current 
+			DESCRIPTION 
+				"This is the event description." 
+			::= { unitEventEntry 6 }
+
+	-- SNMP Trap Information group ( trapInfo )
+
+	maxNumTrap		OBJECT-TYPE
+		SYNTAX		INTEGER
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"The maximum number of SNMP trap recipients
+			supported by the connectivity unit. 
+			This value is always 4." 
+		::= { trapInfo 1 } 
+
+	trapNumCount	OBJECT-TYPE 
+		SYNTAX		INTEGER
+		MAX-ACCESS	read-only 
+		STATUS		current 
+		DESCRIPTION 
+			"The current number of rows in the trap table.
+			 This value is from 0 to 3."
+		::= { trapInfo 2 } 
+
+	-- group of trapInfoTable
+
+	trapInfoTable	OBJECT-TYPE 
+		SYNTAX		SEQUENCE OF TrapInfoEntry 
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"A table containing a row for each IP address/port 
+			number that traps will be sent to." 
+		::= { trapInfo 3 } 
+
+	trapInfoEntry	OBJECT-TYPE 
+		SYNTAX		TrapInfoEntry 
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"Ip/Port pair for a specific client." 
+		INDEX { trapInfoIp, 
+				trapInfoPort } 
+		::= { trapInfoTable 1 } 
+
+	TrapInfoEntry ::= 
+		SEQUENCE { 
+			trapInfoIp 
+				IpAddress, 
+			trapInfoPort 
+				INTEGER,
+			trapInfoFilter
+				EventSeverity,
+			trapInfoRowState
+				INTEGER
+		} 
+
+	trapInfoIp		OBJECT-TYPE 
+		SYNTAX		IpAddress 
+		MAX-ACCESS	not-accessible
+		STATUS		current 
+		DESCRIPTION 
+			"The Ip address of a client registered for 
+			traps."
+		::= { trapInfoEntry 1 } 
+
+	trapInfoPort	OBJECT-TYPE 
+		SYNTAX		INTEGER (0..65535)
+		MAX-ACCESS	not-accessible
+		STATUS		current 
+		DESCRIPTION 
+			"The UDP port to send traps to for this host.
+			Normally this would be the standard trap port
+			(162).  This object is an index and must be
+			specified to create a row in this table."
+		::= { trapInfoEntry 2 } 
+
+	trapInfoFilter	OBJECT-TYPE 
+		SYNTAX		EventSeverity
+		MAX-ACCESS	read-write 
+		STATUS		current 
+		DESCRIPTION 
+			"This value defines the trap severity
+			filter for this trap host. The connUnit will send
+			traps to this host that have a severity level 
+			less than or equal to this value.
+			The default value of this object is 4:'warning'.
+			Accept the 'Set Request', but no operation."
+		::= { trapInfoEntry 3 } 
+
+	trapInfoRowState	OBJECT-TYPE
+		SYNTAX			INTEGER {
+			rowDestroy	(1),	-- Remove row from table.
+			rowInactive	(2),	-- Row exists, but TRAPs disabled
+			rowActive	(3)		-- Row exists and is enabled for
+								-- sending traps
+		}
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"Specifies the state of the row.
+			rowDestroy
+				READ: Can never happen.
+				WRITE: NOP
+			rowInactive
+				READ: Indicates that this row does exist, but
+					  that traps are not enabled to be sent to the
+					  target.
+				WRITE: NOP
+			rowActive
+				READ: Indicates that this row exists, and that traps
+					  are enabled to be sent to the target.
+				WRITE: NOP
+					  
+			A value of rowActive or rowInactive must be specified to
+			create a row in the table. 
+			The value of this object is 2(rowInactive) or 3(rowActive).
+			Accept the 'Set Request', but no operation."
+		::= { trapInfoEntry 4 } 
+
+
+	trapClientTable	OBJECT-TYPE 
+		SYNTAX		SEQUENCE OF TrapClientEntry 
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"A table that traps will be sent to." 
+		::= { trapInfo 4 } 
+
+	trapClientEntry	OBJECT-TYPE 
+		SYNTAX		TrapClientEntry 
+		MAX-ACCESS	not-accessible 
+		STATUS		current 
+		DESCRIPTION 
+			"Ip/Port pair for a specific client." 
+		INDEX { trapClientIndex } 
+		::= { trapClientTable 1 } 
+
+	TrapClientEntry ::= 
+		SEQUENCE { 
+			trapClientIndex 
+				INTEGER,
+			trapClientIpAddress
+				OCTET STRING,
+			trapClientPort
+				INTEGER,
+			trapClientFilter
+				EventSeverity,
+			trapClientRowState
+				INTEGER,
+			trapClientVersion
+				INTEGER,
+			trapClientType
+				INTEGER,
+			trapClientCommunityName
+				OCTET STRING,
+			trapClientUserName
+				OCTET STRING,
+			trapClientAuthMethod
+				INTEGER,
+			trapClientPrivMethod
+				INTEGER
+		} 
+
+	trapClientIndex	OBJECT-TYPE
+		SYNTAX		INTEGER (0..65535)
+		MAX-ACCESS	not-accessible
+		STATUS		current
+		DESCRIPTION 
+			"The unique identifier that trap will be sent to."
+		::= { trapClientEntry 1 } 
+
+	trapClientIpAddress	OBJECT-TYPE 
+		SYNTAX		OCTET STRING (SIZE (0..255))
+		MAX-ACCESS	read-only
+		STATUS		current 
+		DESCRIPTION 
+			"The Ip address of a client registered for 
+			traps."
+		::= { trapClientEntry 2 } 
+
+	trapClientPort	OBJECT-TYPE
+		SYNTAX		INTEGER (0..65535)
+		MAX-ACCESS	read-only
+		STATUS		current
+		DESCRIPTION 
+			"The UDP port to send traps to for this host.
+			Normally this would be the standard trap port
+			(162).  This object is an index and must be
+			specified to create a row in this table."
+		::= { trapClientEntry 3 } 
+
+	trapClientFilter	OBJECT-TYPE
+		SYNTAX			EventSeverity
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"This value defines the trap severity
+			filter for this trap host. The connUnit will send
+			traps to this host that have a severity level 
+			less than or equal to this value.
+			The default value of this object is 4:'warning'.
+			Accept the 'Set Request', but no operation."
+		::= { trapClientEntry 4 } 
+
+	trapClientRowState	OBJECT-TYPE
+		SYNTAX			INTEGER {
+			rowDestroy	(1),	-- Remove row from table.
+			rowInactive	(2),	-- Row exists, but TRAPs disabled
+			rowActive	(3)		-- Row exists and is enabled for
+								-- sending traps
+		}
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"Specifies the state of the row.
+			rowDestroy
+				READ: Can never happen.
+				WRITE: NOP
+			rowInactive
+				READ: Indicates that this row does exist, but
+					  that traps are not enabled to be sent to the
+					  target.
+				WRITE: NOP
+			rowActive
+				READ: Indicates that this row exists, and that traps
+					  are enabled to be sent to the target.
+				WRITE: NOP
+					  
+			A value of rowActive or rowInactive must be specified to
+			create a row in the table. 
+			The value of this object is 2(rowInactive) or 3(rowActive).
+			Accept the 'Set Request', but no operation."
+		::= { trapClientEntry 5 } 
+
+	trapClientVersion	OBJECT-TYPE
+		SYNTAX			INTEGER (0..65535)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"SNMP Version.
+			SNMPv1 = 0
+			SNMPv2c= 1
+			SNMPv3 = 2
+			"
+		::= { trapClientEntry 6 } 
+
+	trapClientType		OBJECT-TYPE
+		SYNTAX			INTEGER (0..65535)
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"SNMP notification type. Trap(0) or Inform(1)."
+		::= { trapClientEntry 7 } 
+
+	trapClientCommunityName		OBJECT-TYPE 
+		SYNTAX		OCTET STRING (SIZE (0..32))
+		MAX-ACCESS	read-write
+		STATUS		current 
+		DESCRIPTION 
+			"SNMP Community Name."
+		::= { trapClientEntry 8 } 
+
+	trapClientUserName		OBJECT-TYPE 
+		SYNTAX		OCTET STRING (SIZE (0..16))
+		MAX-ACCESS	read-write
+		STATUS		current 
+		DESCRIPTION 
+			"SNMP User Name."
+		::= { trapClientEntry 9 } 
+
+	trapClientAuthMethod	OBJECT-TYPE
+		SYNTAX			INTEGER {
+			noAuth	(1),
+			md5		(2),
+			sha		(3)
+		}
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"SNMPv3 Auth Method."
+		::= { trapClientEntry 10 } 
+
+	trapClientPrivMethod	OBJECT-TYPE
+		SYNTAX			INTEGER {
+			noPriv	(1),
+			des		(2),
+			aes		(4)
+		}
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION
+			"SNMPv3 Priv Method."
+		::= { trapClientEntry 11 } 
+
+-- Related traps 
+
+	ibmTS2900EventTrapEmergencyDrive	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Emergency(Drive)"
+	::= { ibmTS2900MIBNotifications 1 }
+
+	ibmTS2900EventTrapEmergencyRobot	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Emergency(Robot)"
+	::= { ibmTS2900MIBNotifications 2 }
+
+	ibmTS2900EventTrapErrorDrive	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Error(Drive)"
+	::= { ibmTS2900MIBNotifications 21 }
+
+	ibmTS2900EventTrapErrorRobot	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Error(Robot)"
+	::= { ibmTS2900MIBNotifications 22 }
+
+	ibmTS2900EventTrapWarningDrive	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Warning(Drive)"
+	::= { ibmTS2900MIBNotifications 51 }
+
+	ibmTS2900EventTrapWarningRobot	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Warning(Robot)"
+	::= { ibmTS2900MIBNotifications 52 }
+
+	ibmTS2900EventTrapCleanRequest	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Warning(Cleaning Request)"
+	::= { ibmTS2900MIBNotifications 53 }
+
+	ibmTS2900EventTrapCleanMediaExpired	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Warning(Cleaning Media Expired)"
+	::= { ibmTS2900MIBNotifications 54 }
+
+	ibmTS2900EventTrapInfoDrive	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Information(Drive)"
+	::= { ibmTS2900MIBNotifications 101 }
+
+	ibmTS2900EventTrapInfoRobot	NOTIFICATION-TYPE
+		OBJECTS {
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr
+		}
+		STATUS			current
+		DESCRIPTION
+			"An event has been generated by the
+			connectivity unit, TS2900.
+			Recommended severity level (for filtering): Information(Robot)"
+	::= { ibmTS2900MIBNotifications 102 }
+
+
+-- conformance information
+
+ibmTS2900Conformance	OBJECT IDENTIFIER ::= { ibm3572 8 }
+ibmTS2900Compliances	OBJECT IDENTIFIER ::= { ibmTS2900Conformance 1 }
+ibmTS2900Groups			OBJECT IDENTIFIER ::= { ibmTS2900Conformance 2 }
+
+ibmTS2900Compliance MODULE-COMPLIANCE
+	STATUS current
+	DESCRIPTION
+		"The Compliance statement for ibm3572 group"
+	MODULE -- this module
+	MANDATORY-GROUPS {
+		ibmTS2900ConfGroup,
+		ibmTS2900NotifGroup
+	}
+	::= { ibmTS2900Compliances 1 }
+
+-- units of conformance
+ibmTS2900ConfGroup  OBJECT-GROUP
+		OBJECTS {
+			revisionNumber,
+			unitNumber,
+			unitTime,
+			sysName,
+			unitContact,
+			unitLocation,
+			unitName,
+			serialNumber,
+			frevNumber,
+			busInfo,
+			idInfo,
+			driveName,
+			drvSerialNumber,
+			drvFrevNumber,
+			drvBusInfo,
+			drvIdInfo,
+			maxUsrSlotNumber,
+			maxMagNumber,
+			ieSlotNumber,
+			slotUnitInfo,
+			slotTable,
+			contIndex,
+			contPowerStatus,
+			magState,
+			magStatus,
+			ieState,
+			robotStatus,
+			contState,
+			contStatus,
+			doorStatus,
+			driveState,
+			driveStatus,
+			unitEventUnitId,
+			unitEventId,
+			unitEventTime,
+			unitEventType,
+			unitEventDescr,
+			maxNumTrap,
+			trapNumCount,
+			trapInfoFilter,
+			trapInfoRowState,
+			trapClientIpAddress,
+			trapClientPort,
+			trapClientFilter,
+			trapClientRowState,
+			trapClientVersion,
+			trapClientType,
+			trapClientCommunityName,
+			trapClientUserName,
+			trapClientAuthMethod,
+			trapClientPrivMethod
+		}
+		STATUS current
+		DESCRIPTION
+			"configuration parameters."
+		::= { ibmTS2900Groups 1}
+
+ibmTS2900NotifGroup  NOTIFICATION-GROUP
+		NOTIFICATIONS {
+			ibmTS2900EventTrapEmergencyDrive,
+			ibmTS2900EventTrapEmergencyRobot,
+			ibmTS2900EventTrapErrorDrive,
+			ibmTS2900EventTrapErrorRobot,
+			ibmTS2900EventTrapWarningDrive,
+			ibmTS2900EventTrapWarningRobot,
+			ibmTS2900EventTrapCleanRequest,
+			ibmTS2900EventTrapCleanMediaExpired,
+			ibmTS2900EventTrapInfoDrive,
+			ibmTS2900EventTrapInfoRobot
+		}
+		STATUS current
+		DESCRIPTION
+			"The collections of notifications."
+		::= { ibmTS2900Groups 2 }
+
+END

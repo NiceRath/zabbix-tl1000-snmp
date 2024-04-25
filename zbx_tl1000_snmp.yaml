@@ -1,0 +1,337 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: e960332b3f6c46a1956486d4f3f99fce
+      name: 'Templates/Server hardware'
+  templates:
+    - uuid: 68245816f5c743948bc7d5677b1587c0
+      template: 'Template Dell TL1000 TapeLibrary'
+      name: 'Template Dell TL1000 TapeLibrary'
+      description: |
+        Dell TL1000 also known as IBM TS2900 (IBM 3572-TL)
+        
+        https://www.ibm.com/docs/en/ts2900tapeautoloader?topic=functions-alerts-logging
+        
+        SNMP MIBs could be downloaded: (not needed by template)
+        https://www.dell.com/support/home/en-tc/drivers/driversdetails?driverid=knhyt
+        https://www.ibm.com/support/fixcentral (TS2900)
+      groups:
+        - name: 'Templates/Server hardware'
+      items:
+        - uuid: d768041345a1446e9d2dd05018b93706
+          name: 'TapeLibrary Description'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.1.5.0
+          key: tl1000.description
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 7dc9d959776b4c70903e93415a0c33ef
+          name: 'TapeLibrary Drive Firmware'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.2.1.4.0
+          key: tl1000.drive.firmware
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          triggers:
+            - uuid: a2f3d46f0d7643ef83598ad9d1f0b8a1
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.drive.firmware,#1)<>last(/Template Dell TL1000 TapeLibrary/tl1000.drive.firmware,#2)'
+              name: 'TapeLibrary Drive-Firmware Changed'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: INFO
+        - uuid: 0f736bfe69604c849d8b4c8d9312fe61
+          name: 'TapeLibrary Firmware'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.1.8.0
+          key: tl1000.firmware
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          triggers:
+            - uuid: 113ba166238c447eb6bf57f3895c50a4
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.firmware,#1)<>last(/Template Dell TL1000 TapeLibrary/tl1000.firmware,#2)'
+              name: 'TapeLibrary Firmware Changed'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: INFO
+        - uuid: 519fe18321f040318a6f471f17176469
+          name: 'TapeLibrary Link Speed'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.2.2.1.5.1
+          key: tl1000.link
+          delay: 1d
+          history: 1d
+          trends: '0'
+          units: bytes
+        - uuid: 737dc2db96254c178f117dc29a25662b
+          name: 'TapeLibrary Location'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.1.6.0
+          key: tl1000.location
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 3aab4940267d4fd7ac1b6dd3e64afaf8
+          name: 'TapeLibrary Model'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.1.1.0
+          key: tl1000.model
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+        - uuid: ac5bbdbfb0ea41268d8472020e4b4d66
+          name: 'TapeLibrary State Controller'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.8.1
+          key: tl1000.state.controller
+          delay: 1h
+          history: 7d
+          trends: '0'
+        - uuid: 44ae0a2d86bd4b0f81d2cba46ad8b7ec
+          name: 'TapeLibrary State Magazine'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.3.1
+          key: tl1000.state.locking
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Magazine State'
+          triggers:
+            - uuid: 86e4db33265c42f7ac64ccad569b1898
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.state.locking)=2'
+              name: 'TapeLibrary Magazine Open/Unlocked'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: WARNING
+        - uuid: 5e6ecec7180d4fc6886076e94139cb1b
+          name: 'TapeLibrary Status Controller'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.7.1
+          key: tl1000.status.controller
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Status'
+        - uuid: a5321c35bc5c4796b9946b7a49de1f8e
+          name: 'TapeLibrary Status Drive'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.2.1.3.0
+          key: tl1000.status.drive
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Status'
+          triggers:
+            - uuid: 054501dbdd824781a73a79e4baf1ec0f
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.status.drive)<>2'
+              name: 'TapeLibrary Drive Status NOT OK'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+        - uuid: 0298397acb1e4d67b1faef4cef564e66
+          name: 'TapeLibrary Status Magazine'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.4.1
+          key: tl1000.status.magazine
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Status'
+          triggers:
+            - uuid: 46089ec5febe4ba0ba48ce3e85ef552d
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.status.magazine)<>2'
+              name: 'TapeLibrary Magazine Status NOT OK'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+        - uuid: 4e142583fffa40e9b8e84e6b83186d89
+          name: 'TapeLibrary Status Power'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.2.1
+          key: tl1000.status.power
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Status'
+          triggers:
+            - uuid: 20929dd6073943abbf6bb1d4fb69387e
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.status.power)<>2'
+              name: 'TapeLibrary Power Status NOT OK'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+        - uuid: 85490c963bed4162bb73c8c46f5fda72
+          name: 'TapeLibrary Status Robot'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2.6.219.2.2.1.1.7.1
+          key: tl1000.status.robot
+          delay: 1h
+          history: 7d
+          trends: '0'
+          valuemap:
+            name: 'TapeLibrary Status'
+          triggers:
+            - uuid: 1007a0190add4954a961d4676e242276
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.status.robot)<>2'
+              name: 'TapeLibrary Robot Status NOT OK'
+              opdata: '{ITEM.LASTVALUE1}'
+              priority: AVERAGE
+        - uuid: 0e670b4ce20644248bd8d502c1c9f695
+          name: 'TapeLibrary Tape Slot 1'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.1
+          key: tl1000.tape.1
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 503b069e9f8d41f698c523212e79cb2c
+          name: 'TapeLibrary Tape Slot 2'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.2
+          key: tl1000.tape.2
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 432aedc2467845cfa63182b0b26f2a43
+          name: 'TapeLibrary Tape Slot 3'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.3
+          key: tl1000.tape.3
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: c969e5ace17d4c61846add339493fde9
+          name: 'TapeLibrary Tape Slot 4'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.4
+          key: tl1000.tape.4
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 01d05e47a2c941aab3f22b614e9b2e76
+          name: 'TapeLibrary Tape Slot 6'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.6
+          key: tl1000.tape.6
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: ab06351d88d848bc8eb4a0b021b0d7e1
+          name: 'TapeLibrary Tape Slot 7'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.7
+          key: tl1000.tape.7
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 45dd0a26582b4b7e88061cc280147168
+          name: 'TapeLibrary Tape Slot 8'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.8
+          key: tl1000.tape.8
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 9361b74c55ee49e7b4ff7c12efadba97
+          name: 'TapeLibrary Tape Cleaning'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.9
+          key: tl1000.tape.9
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: 37629020ae694e2eb430303df941da99
+          name: 'TapeLibrary Tape Loaded'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.2.6.219.2.1.3.4.1.3.10
+          key: tl1000.tape.10
+          delay: 1d
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+        - uuid: b16b89310dbb4243a351cdeac15a5eaa
+          name: 'TapeLibrary Uptime'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.2.1.1.3.0
+          key: tl1000.uptime
+          delay: 1h
+          history: 14d
+          trends: '0'
+          units: s
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          triggers:
+            - uuid: 690ad41ac70c47f4907d7f542a6a13b8
+              expression: 'last(/Template Dell TL1000 TapeLibrary/tl1000.uptime)<3600'
+              name: 'TapeLibrary Rebooted'
+              priority: INFO
+      discovery_rules:
+        - uuid: 08646353e3e347c4b5af83b59f3ebc7a
+          name: 'TapeLibrary Event Discovery'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#EID},.1.3.6.1.4.1.2.6.219.2.3.1.1,{#ESEV},.1.3.6.1.4.1.2.6.219.2.3.1.5]'
+          key: tl1000.events
+          delay: 1h
+          filter:
+            conditions:
+              - macro: '{#ESEV}'
+                value: '{$ESEV_INFO}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          lifetime: 1d
+          item_prototypes:
+            - uuid: e8a186c81e4c443bbc5c9f4e45f54bab
+              name: 'TapeLibrary Event {#EID} Message'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.4.1.2.6.219.2.3.1.6.{#EID}'
+              key: 'tl1000.event.msg[{#EID}]'
+              delay: 1d
+              history: 7d
+              trends: '0'
+              value_type: CHAR
+              trigger_prototypes:
+                - uuid: d0652cb99b384a79b30820d47798c4fb
+                  expression: 'length(last(/Template Dell TL1000 TapeLibrary/tl1000.event.msg[{#EID}]))>0'
+                  name: 'TapeLibrary Error Event'
+                  opdata: '{ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+      macros:
+        - macro: '{$ESEV_INFO}'
+          value: '5'
+      valuemaps:
+        - uuid: f0407a04c5ef44f3ace2d1f864e68e83
+          name: 'TapeLibrary Magazine State'
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: open
+            - value: '3'
+              newvalue: close
+        - uuid: fccba9d32ee344578a6228611e5f1fe1
+          name: 'TapeLibrary Status'
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: ok
+            - value: '3'
+              newvalue: warning
+            - value: '4'
+              newvalue: failed
